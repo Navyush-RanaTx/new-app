@@ -1,33 +1,24 @@
-# Step 1: Build the React app using a Node.js image
+# Step 1: Build
 FROM node:18 AS builder
 
-# Set working directory inside the container
 WORKDIR /app
 
-# Copy package.json and package-lock.json (or yarn.lock)
 COPY package*.json ./
-
-# Install dependencies
 RUN npm install
 
-# Copy the rest of the project files
+# Copy rest of the code including index.html and src/
+COPY . .
 
-# Build the app for production
 RUN npm run build
 
-# Step 2: Serve the built app using the "serve" package
+# Step 2: Serve with serve
 FROM node:18
 
-# Install serve globally
-RUN npm install -g serve
-
-# Set working directory inside the container
 WORKDIR /app
 
-# Copy the build output from the builder stage
-COPY --from=builder /app/dist /app
+RUN npm install -g serve
 
-# Expose port 80
-EXPOSE 80
-# Run the app using "serve"
-CMD ["serve", "-s", "build", "-l", "80"]
+COPY --from=builder /app/dist ./dist
+
+EXPOSE 3000
+CMD ["serve", "-s", "dist", "-l", "3000"]
